@@ -1,0 +1,21 @@
+- I want to create a post generation and scheduling tool
+- We should use Remotion for programmatic video design
+- We are building on a Next.js base for our APIs and pages
+- I want the color theme of our videos to be monochromatic, with the option to add a single color accent later
+- I like off black for backgrounds in dark mode and foregrounds in light mode
+- All of our colors should adhere to a fractional hsl lightness percentage, e.g., hsl(0, 0, 6.25) // #0F0F0F
+- I like brutalist and minimal style (e.g., 2px strokes, ample negative space, no shadows)
+- We should be able to go from conceptual prompt to an annotated & animated scheduled video in one click
+- Our video style should mimic & build on that of Visualize Value's minimal explainer animation style
+- Commit and push straight to main after every small chunk and/or every chat turn
+- Never run the dev server as I am running it
+- We should use Upstash QStash to manage message queuing
+- We should be able to schedule videos to be posted to an authorized instagram account
+- We should use Better Auth for auth
+- Always use pnpm and `pnpm exec` and `pnpm dlx`
+- We should use Drizzle ORM
+- We should use Neon Postgres
+- We should use tRPC when needed
+- We should use ArkType over Zod as our validator
+- We should use React Query
+- You can create markdown plans in a /.context/_generated/
