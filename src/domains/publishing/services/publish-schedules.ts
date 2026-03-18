@@ -13,6 +13,7 @@ import {
   setProjectStatus,
 } from "@/domains/projects/services/project-state";
 import { getProjectForUser } from "@/domains/projects/services/projects";
+import { getActiveInstagramAccountForUser } from "@/domains/publishing/services/instagram-accounts";
 import { err, ok, type Result } from "@/domains/shared/types/result";
 
 type ScheduleProjectPublicationInput = {
@@ -88,8 +89,13 @@ export async function scheduleProjectPublication(
   if (!project) return err(new Error("Project not found"));
 
   const latestRender = await getLatestRenderForProject(input.projectId);
+  const instagramAccount = await getActiveInstagramAccountForUser(input.userId);
 
   if (!latestRender) return err(new Error("Project has no render record"));
+  if (!instagramAccount)
+    return err(new Error("Connect an Instagram account before scheduling"));
+  if (!latestRender.publicUrl)
+    return err(new Error("Project render is missing a public URL"));
   if (input.publishAt.getTime() <= Date.now())
     return err(new Error("Publish time must be in the future"));
 

@@ -1,6 +1,6 @@
 export * from "@/domains/database/schema/accounts";
+export * from "@/domains/database/schema/instagram-accounts";
 export * from "@/domains/database/schema/job-events";
-export * from "@/domains/database/schema/projects";
 export * from "@/domains/database/schema/projects";
 export * from "@/domains/database/schema/publish-jobs";
 export * from "@/domains/database/schema/publish-schedules";

@@ -8,6 +8,9 @@ import {
   appendProjectJobEvent,
   setProjectStatus,
 } from "@/domains/projects/services/project-state";
+import { getProjectById } from "@/domains/projects/services/projects";
+import { getActiveInstagramAccountForUser } from "@/domains/publishing/services/instagram-accounts";
+import { publishRenderToInstagram } from "@/domains/publishing/services/instagram-publishing";
 import {
   markPublishJobAsFailed,
   markPublishJobAsPublished,
@@ -20,6 +23,7 @@ import {
 } from "@/domains/publishing/services/publish-schedules";
 import { logger } from "@/domains/shared/lib/logger";
 import { err, ok, type Result } from "@/domains/shared/types/result";
+import { getVideoRenderById } from "@/domains/videos/services/render-records";
 
 async function markFailed(payload: PublishJob, message: string) {
   await markScheduleAsFailed(payload.publishScheduleId);
@@ -52,8 +56,17 @@ export async function processPublishJob(
 ): Promise<Result<{ projectId: string; publishScheduleId: string }>> {
   try {
     const schedule = await getPublishScheduleById(payload.publishScheduleId);
+    const project = await getProjectById(payload.projectId);
+    const render = await getVideoRenderById(payload.videoRenderId);
+    const instagramAccount = await getActiveInstagramAccountForUser(
+      payload.userId,
+    );
 
     if (!schedule) return err(new Error("Publish schedule not found"));
+    if (!project) return err(new Error("Project not found"));
+    if (!render) return err(new Error("Render not found"));
+    if (!instagramAccount)
+      return err(new Error("Instagram account is not connected"));
 
     await startPublishJob({
       platform: schedule.platform,
@@ -70,17 +83,27 @@ export async function processPublishJob(
       status: "started",
     });
 
+    const publication = await publishRenderToInstagram({
+      account: instagramAccount,
+      project,
+      render,
+    });
+
     await markScheduleAsPublished(payload.publishScheduleId);
     await markPublishJobAsPublished(payload.publishScheduleId, {
-      deliveryMode: "simulated",
-      externalPostId: `instagram-simulated-${payload.publishScheduleId}`,
-      publishedAt: new Date().toISOString(),
+      containerId: publication.containerId,
+      deliveryMode: "instagram-graph",
+      externalPostId: publication.externalPostId,
+      publishedAt: publication.publishedAt,
+      username: instagramAccount.username,
     });
     await setProjectStatus(payload.projectId, "published");
     await appendProjectJobEvent({
       detail: {
-        deliveryMode: "simulated",
+        deliveryMode: "instagram-graph",
+        externalPostId: publication.externalPostId,
         publishScheduleId: payload.publishScheduleId,
+        username: instagramAccount.username,
       },
       projectId: payload.projectId,
       stage: "publish-instagram",

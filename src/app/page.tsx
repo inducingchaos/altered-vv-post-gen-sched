@@ -3,6 +3,8 @@ import { AuthShell } from "@/domains/auth/components/auth-shell";
 import { getCurrentSession } from "@/domains/auth/server/session";
 import { ProjectIntake } from "@/domains/projects/components/project-intake";
 import { listProjectOverviewsForUser } from "@/domains/projects/services/project-overview";
+import { InstagramAccountPanel } from "@/domains/publishing/components/instagram-account-panel";
+import { getActiveInstagramAccountForUser } from "@/domains/publishing/services/instagram-accounts";
 import { themeTokens } from "@/domains/shared/theme/tokens";
 
 export default async function Home() {
@@ -24,6 +26,9 @@ export default async function Home() {
     "React Query client state",
   ];
   const currentSession = await getCurrentSession();
+  const instagramAccount = currentSession
+    ? await getActiveInstagramAccountForUser(currentSession.user.id)
+    : null;
   const projects = currentSession
     ? await listProjectOverviewsForUser(currentSession.user.id)
     : [];
@@ -88,6 +93,21 @@ export default async function Home() {
 
       <section className="grid gap-5 md:grid-cols-[0.9fr_1.1fr]">
         <div className="grid gap-5">
+          {currentSession ? (
+            <InstagramAccountPanel
+              account={
+                instagramAccount
+                  ? {
+                      id: instagramAccount.id,
+                      instagramUserId: instagramAccount.instagramUserId,
+                      lastValidatedAt: instagramAccount.lastValidatedAt,
+                      status: instagramAccount.status,
+                      username: instagramAccount.username,
+                    }
+                  : null
+              }
+            />
+          ) : null}
           <div className="border-2 border-border bg-card p-5 md:p-6">
             <p className="font-mono text-[0.6875rem] uppercase tracking-[0.24em] text-muted-foreground">
               Style directives
@@ -133,6 +153,7 @@ export default async function Home() {
 
           {currentSession ? (
             <ProjectIntake
+              hasInstagramAccount={Boolean(instagramAccount)}
               initialProjects={projects.map((entry) => ({
                 createdAt: entry.project.createdAt,
                 id: entry.project.id,

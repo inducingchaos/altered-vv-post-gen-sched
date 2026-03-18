@@ -34,6 +34,7 @@ type Project = {
 };
 
 type Props = {
+  hasInstagramAccount: boolean;
   initialProjects: Project[];
 };
 
@@ -41,7 +42,7 @@ function toSeconds(durationInFrames: number, fps: number) {
   return (durationInFrames / fps).toFixed(1);
 }
 
-export function ProjectIntake({ initialProjects }: Props) {
+export function ProjectIntake({ hasInstagramAccount, initialProjects }: Props) {
   const router = useRouter();
   const [prompt, setPrompt] = useState("");
   const [publishAtByProject, setPublishAtByProject] = useState<
@@ -237,6 +238,11 @@ export function ProjectIntake({ initialProjects }: Props) {
                   </div>
                 ) : project.latestRender ? (
                   <div className="grid gap-3 border-2 border-border bg-background p-3">
+                    {!hasInstagramAccount ? (
+                      <p className="text-sm text-muted-foreground">
+                        Connect an Instagram account before scheduling a render.
+                      </p>
+                    ) : null}
                     <input
                       className="min-h-11 border-2 border-border bg-card px-3 text-sm outline-none"
                       onChange={(event) =>
@@ -249,7 +255,10 @@ export function ProjectIntake({ initialProjects }: Props) {
                       value={publishAtByProject[project.id] ?? ""}
                     />
                     <Button
-                      disabled={isSchedulingProjectId === project.id}
+                      disabled={
+                        isSchedulingProjectId === project.id ||
+                        !hasInstagramAccount
+                      }
                       onClick={() => handleSchedule(project.id)}
                       type="button"
                     >
