@@ -17,6 +17,12 @@ type Project = {
     outputPath: string;
     status: string;
   } | null;
+  latestSchedule: {
+    id: string;
+    platform: string;
+    publishAt: string | Date;
+    status: string;
+  } | null;
   prompt: string;
   status: string;
 };
@@ -32,8 +38,14 @@ function toSeconds(durationInFrames: number, fps: number) {
 export function ProjectIntake({ initialProjects }: Props) {
   const router = useRouter();
   const [prompt, setPrompt] = useState("");
+  const [publishAtByProject, setPublishAtByProject] = useState<
+    Record<string, string>
+  >({});
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSchedulingProjectId, setIsSchedulingProjectId] = useState<
+    string | null
+  >(null);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -69,6 +81,49 @@ export function ProjectIntake({ initialProjects }: Props) {
       );
     } finally {
       setIsSubmitting(false);
+    }
+  }
+
+  async function handleSchedule(projectId: string) {
+    const publishAt = publishAtByProject[projectId];
+
+    if (!publishAt) {
+      setError("Choose a publish time first");
+      return;
+    }
+
+    setError(null);
+    setIsSchedulingProjectId(projectId);
+
+    try {
+      const response = await fetch(`/api/projects/${projectId}/schedule`, {
+        body: JSON.stringify({ publishAt: new Date(publishAt).toISOString() }),
+        credentials: "include",
+        headers: {
+          "content-type": "application/json",
+        },
+        method: "POST",
+      });
+
+      const data = (await response.json()) as
+        | {
+            error?: string;
+          }
+        | undefined;
+
+      if (!response.ok) {
+        throw new Error(data?.error ?? "Scheduling failed");
+      }
+
+      router.refresh();
+    } catch (submissionError) {
+      setError(
+        submissionError instanceof Error
+          ? submissionError.message
+          : "Scheduling failed",
+      );
+    } finally {
+      setIsSchedulingProjectId(null);
     }
   }
 
@@ -145,6 +200,42 @@ export function ProjectIntake({ initialProjects }: Props) {
                     No render record yet
                   </p>
                 )}
+                {project.latestSchedule ? (
+                  <div className="grid gap-1 border-2 border-border bg-background p-3 font-mono text-[0.75rem] text-muted-foreground">
+                    <span className="uppercase">
+                      Schedule {project.latestSchedule.status}
+                    </span>
+                    <span>{project.latestSchedule.platform}</span>
+                    <span>
+                      {new Date(
+                        project.latestSchedule.publishAt,
+                      ).toLocaleString()}
+                    </span>
+                  </div>
+                ) : project.latestRender ? (
+                  <div className="grid gap-3 border-2 border-border bg-background p-3">
+                    <input
+                      className="min-h-11 border-2 border-border bg-card px-3 text-sm outline-none"
+                      onChange={(event) =>
+                        setPublishAtByProject((current) => ({
+                          ...current,
+                          [project.id]: event.target.value,
+                        }))
+                      }
+                      type="datetime-local"
+                      value={publishAtByProject[project.id] ?? ""}
+                    />
+                    <Button
+                      disabled={isSchedulingProjectId === project.id}
+                      onClick={() => handleSchedule(project.id)}
+                      type="button"
+                    >
+                      {isSchedulingProjectId === project.id
+                        ? "Scheduling"
+                        : "Schedule publish"}
+                    </Button>
+                  </div>
+                ) : null}
               </div>
             ))
           ) : (

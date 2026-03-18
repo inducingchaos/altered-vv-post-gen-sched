@@ -147,6 +147,14 @@ export default async function Home() {
                       status: entry.latestRender.status,
                     }
                   : null,
+                latestSchedule: entry.latestSchedule
+                  ? {
+                      id: entry.latestSchedule.id,
+                      platform: entry.latestSchedule.platform,
+                      publishAt: entry.latestSchedule.publishAt,
+                      status: entry.latestSchedule.status,
+                    }
+                  : null,
                 prompt: entry.project.prompt,
                 status: entry.project.status,
               }))}
