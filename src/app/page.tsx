@@ -185,6 +185,7 @@ export default async function Home() {
                     }
                   : null,
                 prompt: entry.project.prompt,
+                scheduledFor: entry.project.scheduledFor,
                 status: entry.project.status,
               }))}
             />

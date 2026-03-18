@@ -6,9 +6,11 @@ import {
 } from "@/domains/orchestration/contracts/render-job";
 import {
   appendProjectJobEvent,
+  setProjectScheduledFor,
   setProjectStatus,
 } from "@/domains/projects/services/project-state";
 import { getProjectById } from "@/domains/projects/services/projects";
+import { scheduleProjectPublication } from "@/domains/publishing/services/publish-schedules";
 import { logger } from "@/domains/shared/lib/logger";
 import { err, ok, type Result } from "@/domains/shared/types/result";
 import { mapProjectToRenderInput } from "@/domains/videos/services/map-project-to-render-input";
@@ -34,6 +36,15 @@ async function markFailed(input: {
     stage: "prepare-render",
     status: "failed",
   });
+}
+
+function resolvePublishAt(scheduledFor: string) {
+  const desiredDate = new Date(scheduledFor);
+  const minimumDate = new Date(Date.now() + 60_000);
+
+  return desiredDate.getTime() > minimumDate.getTime()
+    ? desiredDate
+    : minimumDate;
 }
 
 export async function runRenderJob(
@@ -96,6 +107,31 @@ export async function processRenderJob(
       stage: "prepare-render",
       status: "completed",
     });
+
+    if (project.scheduledFor) {
+      const publishAt = resolvePublishAt(project.scheduledFor);
+      const scheduleResult = await scheduleProjectPublication({
+        projectId: payload.projectId,
+        publishAt,
+        userId: payload.userId,
+      });
+
+      if (!scheduleResult.ok) {
+        await appendProjectJobEvent({
+          detail: {
+            message: scheduleResult.error.message,
+            scheduledFor: project.scheduledFor,
+          },
+          projectId: payload.projectId,
+          stage: "schedule-publish",
+          status: "failed",
+        });
+
+        return err(scheduleResult.error);
+      }
+
+      await setProjectScheduledFor(payload.projectId, publishAt.toISOString());
+    }
 
     logger.info("Render prepared", {
       projectId: payload.projectId,

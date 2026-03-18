@@ -50,3 +50,16 @@ export async function setProjectStoryboard(
     })
     .where(eq(projects.id, projectId));
 }
+
+export async function setProjectScheduledFor(
+  projectId: string,
+  scheduledFor: string | null,
+) {
+  return getDatabase()
+    .update(projects)
+    .set({
+      scheduledFor,
+      updatedAt: new Date(),
+    })
+    .where(eq(projects.id, projectId));
+}

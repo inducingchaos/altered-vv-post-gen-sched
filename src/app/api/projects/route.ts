@@ -39,6 +39,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: parsed.summary }, { status: 400 });
 
   const result = await createProject({
+    publishAt: parsed.publishAt,
     prompt: parsed.prompt,
     userId: session.user.id,
   });

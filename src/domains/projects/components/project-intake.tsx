@@ -30,6 +30,7 @@ type Project = {
     status: string;
   } | null;
   prompt: string;
+  scheduledFor: string | null;
   status: string;
 };
 
@@ -45,6 +46,7 @@ function toSeconds(durationInFrames: number, fps: number) {
 export function ProjectIntake({ hasInstagramAccount, initialProjects }: Props) {
   const router = useRouter();
   const [prompt, setPrompt] = useState("");
+  const [publishAt, setPublishAt] = useState("");
   const [publishAtByProject, setPublishAtByProject] = useState<
     Record<string, string>
   >({});
@@ -61,7 +63,10 @@ export function ProjectIntake({ hasInstagramAccount, initialProjects }: Props) {
 
     try {
       const response = await fetch("/api/projects", {
-        body: JSON.stringify({ prompt }),
+        body: JSON.stringify({
+          prompt,
+          publishAt: publishAt ? new Date(publishAt).toISOString() : undefined,
+        }),
         credentials: "include",
         headers: {
           "content-type": "application/json",
@@ -79,6 +84,7 @@ export function ProjectIntake({ hasInstagramAccount, initialProjects }: Props) {
         throw new Error(data?.error ?? "Project creation failed");
 
       setPrompt("");
+      setPublishAt("");
       router.refresh();
     } catch (submissionError) {
       setError(
@@ -150,6 +156,19 @@ export function ProjectIntake({ hasInstagramAccount, initialProjects }: Props) {
           required
           value={prompt}
         />
+        <input
+          className="min-h-11 border-2 border-border bg-background px-3 text-sm outline-none"
+          disabled={!hasInstagramAccount}
+          onChange={(event) => setPublishAt(event.target.value)}
+          type="datetime-local"
+          value={publishAt}
+        />
+        {!hasInstagramAccount ? (
+          <p className="text-sm text-muted-foreground">
+            Connect an Instagram account to schedule the full pipeline in one
+            click.
+          </p>
+        ) : null}
         {error ? (
           <p className="text-sm text-muted-foreground">{error}</p>
         ) : null}
@@ -180,6 +199,12 @@ export function ProjectIntake({ hasInstagramAccount, initialProjects }: Props) {
                   </span>
                 </div>
                 <p className="text-sm leading-7">{project.prompt}</p>
+                {project.scheduledFor && !project.latestSchedule ? (
+                  <p className="font-mono text-[0.75rem] uppercase text-muted-foreground">
+                    Auto-schedule target{" "}
+                    {new Date(project.scheduledFor).toLocaleString()}
+                  </p>
+                ) : null}
                 {project.latestRender ? (
                   <div className="grid gap-2 border-2 border-border bg-background p-3">
                     <div className="flex items-center justify-between gap-4">

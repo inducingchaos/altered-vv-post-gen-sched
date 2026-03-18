@@ -17,6 +17,7 @@ import { logger } from "@/domains/shared/lib/logger";
 import { err, ok, type Result } from "@/domains/shared/types/result";
 
 type CreateProjectInput = {
+  publishAt?: Date;
   prompt: string;
   userId: string;
 };
@@ -42,10 +43,15 @@ export async function createProject(
   const db = getDatabase();
 
   try {
+    if (input.publishAt && input.publishAt.getTime() <= Date.now()) {
+      return err(new Error("Publish time must be in the future"));
+    }
+
     const [project] = await db
       .insert(projects)
       .values({
         prompt: input.prompt,
+        scheduledFor: input.publishAt ? input.publishAt.toISOString() : null,
         status: "queued",
         userId: input.userId,
       })
@@ -53,6 +59,7 @@ export async function createProject(
 
     await appendProjectJobEvent({
       detail: {
+        publishAt: input.publishAt?.toISOString() ?? null,
         source: "project.create",
       },
       projectId: project.id,
