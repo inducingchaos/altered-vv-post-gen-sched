@@ -2,6 +2,12 @@ import { desc, eq } from "drizzle-orm";
 
 import { getDatabase } from "@/domains/database/client";
 import { publishSchedules, videoRenders } from "@/domains/database/schema";
+import { publishJobSchema } from "@/domains/orchestration/contracts/publish-job";
+import {
+  getInternalJobUrl,
+  getQStashClient,
+  getQStashHeaders,
+} from "@/domains/orchestration/qstash";
 import {
   appendProjectJobEvent,
   setProjectStatus,
@@ -24,6 +30,43 @@ export async function getLatestPublishScheduleForProject(projectId: string) {
     .limit(1);
 
   return schedule ?? null;
+}
+
+export async function getPublishScheduleById(publishScheduleId: string) {
+  const [schedule] = await getDatabase()
+    .select()
+    .from(publishSchedules)
+    .where(eq(publishSchedules.id, publishScheduleId))
+    .limit(1);
+
+  return schedule ?? null;
+}
+
+async function queuePublishExecution(input: {
+  projectId: string;
+  publishAt: Date;
+  publishScheduleId: string;
+  userId: string;
+  videoRenderId: string;
+}) {
+  const client = getQStashClient();
+
+  if (!client) return ok({ publishScheduleId: input.publishScheduleId });
+
+  await client.publishJSON({
+    body: publishJobSchema.assert({
+      projectId: input.projectId,
+      publishScheduleId: input.publishScheduleId,
+      userId: input.userId,
+      videoRenderId: input.videoRenderId,
+    }),
+    headers: getQStashHeaders(),
+    notBefore: Math.floor(input.publishAt.getTime() / 1000),
+    retries: 3,
+    url: getInternalJobUrl("/api/jobs/publish"),
+  });
+
+  return ok({ publishScheduleId: input.publishScheduleId });
 }
 
 async function getLatestRenderForProject(projectId: string) {
@@ -67,11 +110,52 @@ export async function scheduleProjectPublication(
       platform: "instagram",
       publishAt: input.publishAt.toISOString(),
       scheduleId: schedule.id,
+      videoRenderId: latestRender.id,
     },
     projectId: input.projectId,
     stage: "schedule-publish",
     status: "completed",
   });
+  await appendProjectJobEvent({
+    detail: {
+      publishAt: input.publishAt.toISOString(),
+      scheduleId: schedule.id,
+      source: "publish.enqueue",
+    },
+    projectId: input.projectId,
+    stage: "publish-instagram",
+    status: "queued",
+  });
+
+  const enqueueResult = await queuePublishExecution({
+    projectId: input.projectId,
+    publishAt: input.publishAt,
+    publishScheduleId: schedule.id,
+    userId: input.userId,
+    videoRenderId: latestRender.id,
+  });
+
+  if (!enqueueResult.ok) return err(enqueueResult.error);
 
   return ok(schedule);
+}
+
+export async function markScheduleAsPublished(publishScheduleId: string) {
+  return getDatabase()
+    .update(publishSchedules)
+    .set({
+      status: "published",
+      updatedAt: new Date(),
+    })
+    .where(eq(publishSchedules.id, publishScheduleId));
+}
+
+export async function markScheduleAsFailed(publishScheduleId: string) {
+  return getDatabase()
+    .update(publishSchedules)
+    .set({
+      status: "failed",
+      updatedAt: new Date(),
+    })
+    .where(eq(publishSchedules.id, publishScheduleId));
 }
