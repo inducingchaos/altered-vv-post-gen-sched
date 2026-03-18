@@ -8,6 +8,12 @@ import { Button } from "@/components/ui/button";
 type Project = {
   createdAt: string | Date;
   id: string;
+  latestPublishJob: {
+    executedAt: string | Date | null;
+    id: string;
+    platform: string;
+    status: string;
+  } | null;
   latestRender: {
     compositionId: string;
     createdAt: string | Date;
@@ -211,6 +217,23 @@ export function ProjectIntake({ initialProjects }: Props) {
                         project.latestSchedule.publishAt,
                       ).toLocaleString()}
                     </span>
+                    {project.latestPublishJob ? (
+                      <>
+                        <span className="uppercase">
+                          Publish job {project.latestPublishJob.status}
+                        </span>
+                        <span>{project.latestPublishJob.platform}</span>
+                        <span>
+                          {project.latestPublishJob.executedAt
+                            ? new Date(
+                                project.latestPublishJob.executedAt,
+                              ).toLocaleString()
+                            : "Awaiting execution"}
+                        </span>
+                      </>
+                    ) : (
+                      <span className="uppercase">Publish job queued</span>
+                    )}
                   </div>
                 ) : project.latestRender ? (
                   <div className="grid gap-3 border-2 border-border bg-background p-3">

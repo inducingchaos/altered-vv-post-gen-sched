@@ -136,6 +136,14 @@ export default async function Home() {
               initialProjects={projects.map((entry) => ({
                 createdAt: entry.project.createdAt,
                 id: entry.project.id,
+                latestPublishJob: entry.latestPublishJob
+                  ? {
+                      executedAt: entry.latestPublishJob.executedAt,
+                      id: entry.latestPublishJob.id,
+                      platform: entry.latestPublishJob.platform,
+                      status: entry.latestPublishJob.status,
+                    }
+                  : null,
                 latestRender: entry.latestRender
                   ? {
                       compositionId: entry.latestRender.compositionId,
