@@ -8,7 +8,6 @@ const envSchema = type({
   QSTASH_CURRENT_SIGNING_KEY: "string > 0 | undefined",
   QSTASH_NEXT_SIGNING_KEY: "string > 0 | undefined",
   QSTASH_TOKEN: "string > 0 | undefined",
-  SUPABASE_DATABASE_URL: "string > 0 | undefined",
 });
 
 type Env = {
@@ -43,15 +42,7 @@ export function getEnv(): Env {
     throw new Error(parsed.summary);
   }
 
-  const resolved = {
-    ...parsed,
-    DATABASE_URL: parsed.DATABASE_URL ?? parsed.SUPABASE_DATABASE_URL,
-  };
-
-  if (!resolved.DATABASE_URL)
-    throw new Error("DATABASE_URL or SUPABASE_DATABASE_URL is required");
-
-  cache = resolved;
+  cache = parsed;
 
   return cache;
 }
