@@ -1,2 +1,6 @@
+export * from "@/domains/database/schema/accounts";
 export * from "@/domains/database/schema/job-events";
 export * from "@/domains/database/schema/projects";
+export * from "@/domains/database/schema/sessions";
+export * from "@/domains/database/schema/users";
+export * from "@/domains/database/schema/verifications";

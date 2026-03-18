@@ -1,23 +1,25 @@
 import { type } from "arktype";
 
 const envSchema = type({
-  DATABASE_URL: "string > 0",
+  DATABASE_URL: "string | undefined",
   BETTER_AUTH_SECRET: "string > 0 | undefined",
   BETTER_AUTH_URL: "string.url | undefined",
   NEXT_PUBLIC_APP_URL: "string.url | undefined",
   QSTASH_CURRENT_SIGNING_KEY: "string > 0 | undefined",
   QSTASH_NEXT_SIGNING_KEY: "string > 0 | undefined",
   QSTASH_TOKEN: "string > 0 | undefined",
+  SUPABASE_DATABASE_URL: "string > 0 | undefined",
 });
 
 type Env = {
   BETTER_AUTH_SECRET?: string;
   BETTER_AUTH_URL?: string;
-  DATABASE_URL: string;
+  DATABASE_URL?: string;
   NEXT_PUBLIC_APP_URL?: string;
   QSTASH_CURRENT_SIGNING_KEY?: string;
   QSTASH_NEXT_SIGNING_KEY?: string;
   QSTASH_TOKEN?: string;
+  SUPABASE_DATABASE_URL?: string;
 };
 
 let cache: Env | null = null;
@@ -41,7 +43,15 @@ export function getEnv(): Env {
     throw new Error(parsed.summary);
   }
 
-  cache = parsed;
+  const resolved = {
+    ...parsed,
+    DATABASE_URL: parsed.DATABASE_URL ?? parsed.SUPABASE_DATABASE_URL,
+  };
+
+  if (!resolved.DATABASE_URL)
+    throw new Error("DATABASE_URL or SUPABASE_DATABASE_URL is required");
+
+  cache = resolved;
 
   return cache;
 }

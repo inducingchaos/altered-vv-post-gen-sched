@@ -1,7 +1,11 @@
 import { Button } from "@/components/ui/button";
+import { AuthShell } from "@/domains/auth/components/auth-shell";
+import { getCurrentSession } from "@/domains/auth/server/session";
+import { ProjectIntake } from "@/domains/projects/components/project-intake";
+import { listProjectsForUser } from "@/domains/projects/services/projects";
 import { themeTokens } from "@/domains/shared/theme/tokens";
 
-export default function Home() {
+export default async function Home() {
   const pipeline = [
     "Prompt intake",
     "Storyboard generation",
@@ -19,6 +23,10 @@ export default function Home() {
     "QStash orchestration",
     "React Query client state",
   ];
+  const currentSession = await getCurrentSession();
+  const projects = currentSession
+    ? await listProjectsForUser(currentSession.user.id)
+    : [];
 
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-7xl flex-col gap-10 px-5 py-5 md:px-8 md:py-8">
@@ -79,43 +87,58 @@ export default function Home() {
       </section>
 
       <section className="grid gap-5 md:grid-cols-[0.9fr_1.1fr]">
-        <div className="border-2 border-border bg-card p-5 md:p-6">
-          <p className="font-mono text-[0.6875rem] uppercase tracking-[0.24em] text-muted-foreground">
-            Style Directives
-          </p>
-          <div className="mt-6 grid gap-3 text-sm uppercase">
-            <div className="border-2 border-border px-3 py-4">
-              2px strokes only
-            </div>
-            <div className="border-2 border-border px-3 py-4">No shadows</div>
-            <div className="border-2 border-border px-3 py-4">
-              Ample negative space
-            </div>
-            <div className="border-2 border-border px-3 py-4">
-              Visualize Value inspired motion language
+        <div className="grid gap-5">
+          <div className="border-2 border-border bg-card p-5 md:p-6">
+            <p className="font-mono text-[0.6875rem] uppercase tracking-[0.24em] text-muted-foreground">
+              Style directives
+            </p>
+            <div className="mt-6 grid gap-3 text-sm uppercase">
+              <div className="border-2 border-border px-3 py-4">
+                2px strokes only
+              </div>
+              <div className="border-2 border-border px-3 py-4">No shadows</div>
+              <div className="border-2 border-border px-3 py-4">
+                Ample negative space
+              </div>
+              <div className="border-2 border-border px-3 py-4">
+                Visualize Value inspired motion language
+              </div>
             </div>
           </div>
+
+          <AuthShell />
         </div>
 
-        <div className="border-2 border-border bg-card p-5 md:p-6">
-          <div className="flex items-center justify-between gap-4 border-b-2 border-border pb-4">
-            <p className="font-mono text-[0.6875rem] uppercase tracking-[0.24em] text-muted-foreground">
-              Foundation Stack
-            </p>
-            <span className="font-mono text-[0.75rem] text-muted-foreground">
-              v0 foundation
-            </span>
+        <div className="grid gap-5">
+          <div className="border-2 border-border bg-card p-5 md:p-6">
+            <div className="flex items-center justify-between gap-4 border-b-2 border-border pb-4">
+              <p className="font-mono text-[0.6875rem] uppercase tracking-[0.24em] text-muted-foreground">
+                Foundation stack
+              </p>
+              <span className="font-mono text-[0.75rem] text-muted-foreground">
+                v0 foundation
+              </span>
+            </div>
+            <div className="mt-4 grid gap-0">
+              {stack.map((item) => (
+                <div
+                  className="border-b-2 border-border py-3 text-sm uppercase last:border-b-0"
+                  key={item}
+                >
+                  {item}
+                </div>
+              ))}
+            </div>
           </div>
-          <div className="mt-4 grid gap-0">
-            {stack.map((item) => (
-              <div
-                className="border-b-2 border-border py-3 text-sm uppercase last:border-b-0"
-                key={item}
-              >
-                {item}
-              </div>
-            ))}
-          </div>
+
+          {currentSession ? (
+            <ProjectIntake initialProjects={projects} />
+          ) : (
+            <div className="border-2 border-border bg-card p-5 text-sm leading-7 text-muted-foreground">
+              Sign in to persist prompts as projects and begin the
+              prompt-to-storyboard pipeline.
+            </div>
+          )}
         </div>
       </section>
     </main>

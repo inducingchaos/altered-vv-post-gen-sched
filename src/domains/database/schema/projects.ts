@@ -24,7 +24,11 @@ export const projects = createTable(
       .notNull(),
     storyboard: jsonb("storyboard").$type<Record<string, unknown> | null>(),
     scheduledFor: text("scheduled_for"),
+    userId: text("user_id").notNull(),
     ...lifecycleColumns,
   },
-  (table) => [index("vvpgs_projects_status_idx").on(table.status)],
+  (table) => [
+    index("vvpgs_projects_status_idx").on(table.status),
+    index("vvpgs_projects_user_id_idx").on(table.userId),
+  ],
 );
