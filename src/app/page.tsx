@@ -1,65 +1,123 @@
-import Image from "next/image";
+import { Button } from "@/components/ui/button";
+import { themeTokens } from "@/domains/shared/theme/tokens";
 
 export default function Home() {
+  const pipeline = [
+    "Prompt intake",
+    "Storyboard generation",
+    "Remotion composition",
+    "Render queue",
+    "Schedule handoff",
+    "Instagram publish",
+  ];
+
+  const stack = [
+    "Next.js host",
+    "Remotion compositions",
+    "Better Auth",
+    "Drizzle + postgres",
+    "QStash orchestration",
+    "React Query client state",
+  ];
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <main className="mx-auto flex min-h-screen w-full max-w-7xl flex-col gap-10 px-5 py-5 md:px-8 md:py-8">
+      <section className="grid min-h-[32rem] gap-5 border-2 border-border bg-background p-5 md:grid-cols-[1.4fr_0.8fr] md:p-8">
+        <div className="flex flex-col justify-between gap-8">
+          <div className="space-y-6">
+            <p className="font-mono text-[0.6875rem] uppercase tracking-[0.32em] text-muted-foreground">
+              Prompt / Annotate / Animate / Schedule
+            </p>
+            <div className="space-y-4">
+              <h1 className="max-w-4xl text-4xl leading-none font-medium uppercase md:text-7xl">
+                One click from concept to queued visual essay.
+              </h1>
+              <p className="max-w-2xl text-sm leading-7 text-muted-foreground md:text-base">
+                A minimal control plane for turning a conceptual prompt into a
+                storyboarded Remotion video, routed through durable jobs, then
+                scheduled for Instagram publishing.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <Button>Enter Prompt</Button>
+            <Button variant="ghost">Inspect Pipeline</Button>
+          </div>
+        </div>
+
+        <div className="grid gap-4">
+          <div className="border-2 border-border bg-card p-4">
+            <p className="font-mono text-[0.6875rem] uppercase tracking-[0.24em] text-muted-foreground">
+              Palette Rule
+            </p>
+            <p className="mt-3 text-sm leading-7">
+              Monochrome first. Accent optional. Fractional lightness only.
+            </p>
+            <p className="mt-4 font-mono text-[0.75rem] text-muted-foreground">
+              Dark background: {themeTokens.palette.dark.background}
+            </p>
+            <p className="font-mono text-[0.75rem] text-muted-foreground">
+              Light foreground: {themeTokens.palette.light.foreground}
+            </p>
+          </div>
+
+          <div className="grid gap-0 border-2 border-border bg-card">
+            {pipeline.map((step, index) => (
+              <div
+                className="flex items-center justify-between border-b-2 border-border px-4 py-3 last:border-b-0"
+                key={step}
+              >
+                <span className="font-mono text-[0.75rem] text-muted-foreground">
+                  0{index + 1}
+                </span>
+                <span className="text-right text-sm uppercase">{step}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="grid gap-5 md:grid-cols-[0.9fr_1.1fr]">
+        <div className="border-2 border-border bg-card p-5 md:p-6">
+          <p className="font-mono text-[0.6875rem] uppercase tracking-[0.24em] text-muted-foreground">
+            Style Directives
           </p>
+          <div className="mt-6 grid gap-3 text-sm uppercase">
+            <div className="border-2 border-border px-3 py-4">
+              2px strokes only
+            </div>
+            <div className="border-2 border-border px-3 py-4">No shadows</div>
+            <div className="border-2 border-border px-3 py-4">
+              Ample negative space
+            </div>
+            <div className="border-2 border-border px-3 py-4">
+              Visualize Value inspired motion language
+            </div>
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+
+        <div className="border-2 border-border bg-card p-5 md:p-6">
+          <div className="flex items-center justify-between gap-4 border-b-2 border-border pb-4">
+            <p className="font-mono text-[0.6875rem] uppercase tracking-[0.24em] text-muted-foreground">
+              Foundation Stack
+            </p>
+            <span className="font-mono text-[0.75rem] text-muted-foreground">
+              v0 foundation
+            </span>
+          </div>
+          <div className="mt-4 grid gap-0">
+            {stack.map((item) => (
+              <div
+                className="border-b-2 border-border py-3 text-sm uppercase last:border-b-0"
+                key={item}
+              >
+                {item}
+              </div>
+            ))}
+          </div>
         </div>
-      </main>
-    </div>
+      </section>
+    </main>
   );
 }
