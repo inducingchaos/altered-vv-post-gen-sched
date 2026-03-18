@@ -29,3 +29,4 @@
 - Always lint the codebase with Biome before committing
 - Plumb key infrastructure like logging, retries, and result-style error handling consistently from the start to make the codebase optimized for resilience and maintainability
 - Make common utility pipelines such as data CRUD functions or agent orchestration workflows case-agnostic and highly durable and reusable
+- When writing scoped code segments such as if statements or for loops with only a single line of code, prefer to inline it rather than creating a code block
