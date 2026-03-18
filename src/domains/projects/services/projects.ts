@@ -106,3 +106,15 @@ export async function listProjectsForUser(userId: string) {
     .orderBy(desc(projects.createdAt))
     .limit(12);
 }
+
+export async function getProjectForUser(projectId: string, userId: string) {
+  const [project] = await getDatabase()
+    .select()
+    .from(projects)
+    .where(eq(projects.id, projectId))
+    .limit(1);
+
+  if (!project || project.userId !== userId) return null;
+
+  return project;
+}

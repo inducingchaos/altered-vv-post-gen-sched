@@ -1,3 +1,5 @@
+import type { Storyboard } from "@/domains/storyboards/contracts/storyboard";
+
 function normalizeSentence(sentence: string) {
   return sentence.replace(/\s+/g, " ").trim();
 }
@@ -13,19 +15,20 @@ function toSceneLabel(index: number) {
   return `S${String(index + 1).padStart(2, "0")}`;
 }
 
-export function buildStoryboardFromPrompt(prompt: string) {
+export function buildStoryboardFromPrompt(prompt: string): Storyboard {
   const sentences = splitPrompt(prompt);
   const title = sentences[0] ?? "Untitled concept";
   const source = sentences.length ? sentences : [normalizeSentence(prompt)];
   const scenes = source.slice(0, 6).map((sentence, index) => ({
-    animation: index === 0 ? "title-reveal" : "annotation-slide",
+    animation:
+      index === 0 ? ("title-reveal" as const) : ("annotation-slide" as const),
     beats: [
       "Introduce key idea",
       "Frame supporting evidence",
       "Land concise takeaway",
     ],
     durationInFrames: 90,
-    emphasis: index === 0 ? "primary" : "secondary",
+    emphasis: index === 0 ? ("primary" as const) : ("secondary" as const),
     id: toSceneLabel(index),
     narration: sentence,
     overlay: sentence.toUpperCase(),
