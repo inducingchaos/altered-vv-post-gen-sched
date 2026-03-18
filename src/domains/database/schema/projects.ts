@@ -7,7 +7,9 @@ import {
 
 export const projectStatusValues = [
   "draft",
+  "queued",
   "storyboarding",
+  "storyboarded",
   "rendering",
   "scheduled",
   "published",
