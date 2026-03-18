@@ -3,6 +3,8 @@ import { NextResponse } from "next/server";
 import { runRenderJob } from "@/domains/orchestration/services/render-job";
 import { verifyQStashRequest } from "@/domains/orchestration/verify-qstash-request";
 
+export const runtime = "nodejs";
+
 export async function POST(request: Request) {
   const verification = await verifyQStashRequest(request);
 

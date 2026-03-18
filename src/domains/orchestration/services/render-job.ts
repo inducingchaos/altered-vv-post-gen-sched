@@ -12,15 +12,25 @@ import { getProjectById } from "@/domains/projects/services/projects";
 import { logger } from "@/domains/shared/lib/logger";
 import { err, ok, type Result } from "@/domains/shared/types/result";
 import { mapProjectToRenderInput } from "@/domains/videos/services/map-project-to-render-input";
-import { createVideoRenderRecord } from "@/domains/videos/services/render-records";
+import {
+  createVideoRenderRecord,
+  markVideoRenderAsFailed,
+  markVideoRenderAsRendered,
+} from "@/domains/videos/services/render-records";
+import { renderVideo } from "@/domains/videos/services/render-video";
 
-async function markFailed(projectId: string, message: string) {
-  await setProjectStatus(projectId, "failed");
+async function markFailed(input: {
+  message: string;
+  projectId: string;
+  renderId?: string;
+}) {
+  if (input.renderId) await markVideoRenderAsFailed(input.renderId);
+  await setProjectStatus(input.projectId, "failed");
   await appendProjectJobEvent({
     detail: {
-      message,
+      message: input.message,
     },
-    projectId,
+    projectId: input.projectId,
     stage: "prepare-render",
     status: "failed",
   });
@@ -39,6 +49,8 @@ export async function runRenderJob(
 export async function processRenderJob(
   payload: RenderJob,
 ): Promise<Result<{ projectId: string; renderId: string }>> {
+  let renderId: string | undefined;
+
   try {
     await setProjectStatus(payload.projectId, "rendering");
     await appendProjectJobEvent({
@@ -62,11 +74,22 @@ export async function processRenderJob(
       payload.projectId,
       renderInput.data,
     );
+    renderId = renderRecord.id;
+    const renderedVideo = await renderVideo({
+      outputPath: renderRecord.outputPath,
+      renderInput: renderInput.data,
+    });
+
+    await markVideoRenderAsRendered({
+      fileSizeInBytes: renderedVideo.fileSizeInBytes,
+      renderId: renderRecord.id,
+    });
 
     await setProjectStatus(payload.projectId, "rendered");
     await appendProjectJobEvent({
       detail: {
         compositionId: renderInput.data.compositionId,
+        outputPath: renderRecord.outputPath,
         renderId: renderRecord.id,
       },
       projectId: payload.projectId,
@@ -88,7 +111,7 @@ export async function processRenderJob(
     const message =
       error instanceof Error ? error.message : "Render preparation failed";
 
-    await markFailed(payload.projectId, message);
+    await markFailed({ message, projectId: payload.projectId, renderId });
     logger.error("Render preparation failed", {
       error: message,
       projectId: payload.projectId,

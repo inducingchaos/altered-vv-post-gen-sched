@@ -19,9 +19,11 @@ export const videoRenders = createTable(
     compositionId: text("composition_id").notNull(),
     durationInFrames: integer("duration_in_frames").notNull(),
     fps: integer("fps").notNull(),
+    fileSizeInBytes: integer("file_size_in_bytes"),
     height: integer("height").notNull(),
     outputPath: text("output_path").notNull(),
     projectId: uuid("project_id").notNull(),
+    publicUrl: text("public_url"),
     renderInput: jsonb("render_input")
       .$type<Record<string, unknown>>()
       .notNull(),
