@@ -8,12 +8,12 @@
 - We should be able to go from conceptual prompt to an annotated & animated scheduled video in one click
 - Our video style should mimic & build on that of Visualize Value's minimal explainer animation style
 - Commit and push straight to main after every small chunk and/or every chat turn
-- If the only working changes in the codebase are meta files and not standalone features (e.g., updates to AGENTS.md, package.json, etc.), commit them before making more changes
+- If the only working changes in the codebase are meta files and not standalone app feature implementations (e.g., updates to AGENTS.md, package.json, config/context files, etc.), commit them before making more changes
 - Never run the dev server as I am running it
 - We should use Upstash QStash to manage message queuing
 - We should be able to schedule videos to be posted to an authorized instagram account
 - We should use Better Auth for auth
-- Always use pnpm and `pnpm exec` and `pnpm dlx`
+- Always use `pnpm` and `pnpm exec` or `pnpm dlx`
 - We should use Drizzle ORM v1.0.0-beta.18@7eb39f0
 - We should use Neon Postgres
 - We should use tRPC when needed
