@@ -108,13 +108,19 @@ export async function listProjectsForUser(userId: string) {
 }
 
 export async function getProjectForUser(projectId: string, userId: string) {
+  const project = await getProjectById(projectId);
+
+  if (!project || project.userId !== userId) return null;
+
+  return project;
+}
+
+export async function getProjectById(projectId: string) {
   const [project] = await getDatabase()
     .select()
     .from(projects)
     .where(eq(projects.id, projectId))
     .limit(1);
 
-  if (!project || project.userId !== userId) return null;
-
-  return project;
+  return project ?? null;
 }

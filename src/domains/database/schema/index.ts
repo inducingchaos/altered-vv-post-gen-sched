@@ -4,3 +4,4 @@ export * from "@/domains/database/schema/projects";
 export * from "@/domains/database/schema/sessions";
 export * from "@/domains/database/schema/users";
 export * from "@/domains/database/schema/verifications";
+export * from "@/domains/database/schema/video-renders";

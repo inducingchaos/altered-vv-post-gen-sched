@@ -11,6 +11,7 @@ export const projectStatusValues = [
   "storyboarding",
   "storyboarded",
   "rendering",
+  "rendered",
   "scheduled",
   "published",
   "failed",

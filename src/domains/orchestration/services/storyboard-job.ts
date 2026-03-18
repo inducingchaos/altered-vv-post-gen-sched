@@ -1,9 +1,19 @@
 import { type } from "arktype";
 
 import {
+  type RenderJob,
+  renderJobSchema,
+} from "@/domains/orchestration/contracts/render-job";
+import {
   type StoryboardJob,
   storyboardJobSchema,
 } from "@/domains/orchestration/contracts/storyboard-job";
+import {
+  getInternalJobUrl,
+  getQStashClient,
+  getQStashHeaders,
+} from "@/domains/orchestration/qstash";
+import { processRenderJob } from "@/domains/orchestration/services/render-job";
 import {
   appendProjectJobEvent,
   setProjectStatus,
@@ -12,6 +22,21 @@ import {
 import { logger } from "@/domains/shared/lib/logger";
 import { err, ok, type Result } from "@/domains/shared/types/result";
 import { buildStoryboardFromPrompt } from "@/domains/storyboards/services/build-storyboard-from-prompt";
+
+async function queueRenderPreparation(job: RenderJob) {
+  const client = getQStashClient();
+
+  if (!client) return processRenderJob(job);
+
+  await client.publishJSON({
+    body: renderJobSchema.assert(job),
+    headers: getQStashHeaders(),
+    retries: 3,
+    url: getInternalJobUrl("/api/jobs/render"),
+  });
+
+  return ok({ projectId: job.projectId });
+}
 
 async function markFailed(projectId: string, message: string) {
   await setProjectStatus(projectId, "failed");
@@ -57,6 +82,7 @@ export async function processStoryboardJob(
     await setProjectStatus(payload.projectId, "storyboarded");
     await appendProjectJobEvent({
       detail: {
+        nextStage: "prepare-render",
         sceneCount: storyboard.scenes.length,
         title: storyboard.title,
       },
@@ -70,6 +96,22 @@ export async function processStoryboardJob(
       sceneCount: storyboard.scenes.length,
       userId: payload.userId,
     });
+
+    await appendProjectJobEvent({
+      detail: {
+        source: "render.enqueue",
+      },
+      projectId: payload.projectId,
+      stage: "prepare-render",
+      status: "queued",
+    });
+
+    const enqueueRenderResult = await queueRenderPreparation({
+      projectId: payload.projectId,
+      userId: payload.userId,
+    });
+
+    if (!enqueueRenderResult.ok) return err(enqueueRenderResult.error);
 
     return ok({ projectId: payload.projectId });
   } catch (error) {
