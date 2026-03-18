@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { AuthShell } from "@/domains/auth/components/auth-shell";
 import { getCurrentSession } from "@/domains/auth/server/session";
 import { ProjectIntake } from "@/domains/projects/components/project-intake";
-import { listProjectsForUser } from "@/domains/projects/services/projects";
+import { listProjectOverviewsForUser } from "@/domains/projects/services/project-overview";
 import { themeTokens } from "@/domains/shared/theme/tokens";
 
 export default async function Home() {
@@ -25,7 +25,7 @@ export default async function Home() {
   ];
   const currentSession = await getCurrentSession();
   const projects = currentSession
-    ? await listProjectsForUser(currentSession.user.id)
+    ? await listProjectOverviewsForUser(currentSession.user.id)
     : [];
 
   return (
@@ -132,7 +132,25 @@ export default async function Home() {
           </div>
 
           {currentSession ? (
-            <ProjectIntake initialProjects={projects} />
+            <ProjectIntake
+              initialProjects={projects.map((entry) => ({
+                createdAt: entry.project.createdAt,
+                id: entry.project.id,
+                latestRender: entry.latestRender
+                  ? {
+                      compositionId: entry.latestRender.compositionId,
+                      createdAt: entry.latestRender.createdAt,
+                      durationInFrames: entry.latestRender.durationInFrames,
+                      fps: entry.latestRender.fps,
+                      id: entry.latestRender.id,
+                      outputPath: entry.latestRender.outputPath,
+                      status: entry.latestRender.status,
+                    }
+                  : null,
+                prompt: entry.project.prompt,
+                status: entry.project.status,
+              }))}
+            />
           ) : (
             <div className="border-2 border-border bg-card p-5 text-sm leading-7 text-muted-foreground">
               Sign in to persist prompts as projects and begin the

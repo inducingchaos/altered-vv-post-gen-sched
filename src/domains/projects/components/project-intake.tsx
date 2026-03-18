@@ -8,6 +8,15 @@ import { Button } from "@/components/ui/button";
 type Project = {
   createdAt: string | Date;
   id: string;
+  latestRender: {
+    compositionId: string;
+    createdAt: string | Date;
+    durationInFrames: number;
+    fps: number;
+    id: string;
+    outputPath: string;
+    status: string;
+  } | null;
   prompt: string;
   status: string;
 };
@@ -15,6 +24,10 @@ type Project = {
 type Props = {
   initialProjects: Project[];
 };
+
+function toSeconds(durationInFrames: number, fps: number) {
+  return (durationInFrames / fps).toFixed(1);
+}
 
 export function ProjectIntake({ initialProjects }: Props) {
   const router = useRouter();
@@ -105,6 +118,33 @@ export function ProjectIntake({ initialProjects }: Props) {
                   </span>
                 </div>
                 <p className="text-sm leading-7">{project.prompt}</p>
+                {project.latestRender ? (
+                  <div className="grid gap-2 border-2 border-border bg-background p-3">
+                    <div className="flex items-center justify-between gap-4">
+                      <span className="font-mono text-[0.75rem] uppercase text-muted-foreground">
+                        Render {project.latestRender.status}
+                      </span>
+                      <span className="font-mono text-[0.75rem] text-muted-foreground">
+                        {project.latestRender.compositionId}
+                      </span>
+                    </div>
+                    <div className="grid gap-1 font-mono text-[0.75rem] text-muted-foreground">
+                      <span>
+                        {project.latestRender.fps} fps /{" "}
+                        {toSeconds(
+                          project.latestRender.durationInFrames,
+                          project.latestRender.fps,
+                        )}
+                        s
+                      </span>
+                      <span>{project.latestRender.outputPath}</span>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="font-mono text-[0.75rem] uppercase text-muted-foreground">
+                    No render record yet
+                  </p>
+                )}
               </div>
             ))
           ) : (

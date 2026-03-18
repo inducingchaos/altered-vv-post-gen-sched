@@ -1,3 +1,5 @@
+import { desc, eq } from "drizzle-orm";
+
 import { getDatabase } from "@/domains/database/client";
 import { videoRenders } from "@/domains/database/schema";
 import type { MinimalExplainerProps } from "@/domains/videos/contracts/minimal-explainer";
@@ -31,4 +33,15 @@ export async function createVideoRenderRecord(
     .returning();
 
   return record;
+}
+
+export async function getLatestVideoRenderForProject(projectId: string) {
+  const [record] = await getDatabase()
+    .select()
+    .from(videoRenders)
+    .where(eq(videoRenders.projectId, projectId))
+    .orderBy(desc(videoRenders.createdAt))
+    .limit(1);
+
+  return record ?? null;
 }
