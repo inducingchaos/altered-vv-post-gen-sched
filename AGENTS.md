@@ -3,19 +3,29 @@
 - We are building on a Next.js base for our APIs and pages
 - I want the color theme of our videos to be monochromatic, with the option to add a single color accent later
 - I like off black for backgrounds in dark mode and foregrounds in light mode
-- All of our colors should adhere to a fractional hsl lightness percentage, e.g., hsl(0, 0, 6.25) // #0F0F0F
+- All of our video colors should adhere to a fractional hsl lightness percentage, e.g., hsl(0, 0, 6.25) // #0F0F0F
 - I like brutalist and minimal style (e.g., 2px strokes, ample negative space, no shadows)
 - We should be able to go from conceptual prompt to an annotated & animated scheduled video in one click
 - Our video style should mimic & build on that of Visualize Value's minimal explainer animation style
 - Commit and push straight to main after every small chunk and/or every chat turn
+- If the only working changes in the codebase are meta files and not standalone features (e.g., updates to AGENTS.md, package.json, etc.), commit them before making more changes
 - Never run the dev server as I am running it
 - We should use Upstash QStash to manage message queuing
 - We should be able to schedule videos to be posted to an authorized instagram account
 - We should use Better Auth for auth
 - Always use pnpm and `pnpm exec` and `pnpm dlx`
-- We should use Drizzle ORM
+- We should use Drizzle ORM v1.0.0-beta.18@7eb39f0
 - We should use Neon Postgres
 - We should use tRPC when needed
 - We should use ArkType over Zod as our validator
 - We should use React Query
-- You can create markdown plans in a /.context/_generated/
+- You can create markdown plans in a /.context/\_generated/
+- Use the table prefix "vvpgs\_" for all database tables and as a table filter since this database is shared across multiple projects
+- We should start our component library and CSS theme from the shadcn preset `pnpm dlx shadcn@latest init --preset awPyCUS --base base --template next`, it only allows to create a new Next.js project so we may need to do so in a tmp folder then copy files in
+- Maintain a "features-based" file structure that categorizes in a top-level "domains" folder
+- Split each functional group of code into its own file, preferring more files and composability over single-use-case constructions
+- Keep the code strongly typed but avoid complex types when possible for maintainability
+- Prefer the use of types over interfaces when possible
+- Always lint the codebase with Biome before committing
+- Plumb key infrastructure like logging, retries, and result-style error handling consistently from the start to make the codebase optimized for resilience and maintainability
+- Make common utility pipelines such as data CRUD functions or agent orchestration workflows case-agnostic and highly durable and reusable
